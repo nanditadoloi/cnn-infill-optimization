@@ -1,0 +1,253 @@
+-- This reservoir simulation is made available under the open Database 
+-- License: http://opendatacommons.org/licenses/odbl/1.0/
+-- Individual contents of the database are licensed under the Database contents
+-- License : http://opendatacommons.org/licenses/dbcl/1.0/
+
+
+
+-- Copyright(C) 2015 Statoil
+
+
+
+-- ===============================================================================
+-- SPE 10 - MODEL 2
+-- Simulation based on the followinf SPE paper:
+-- "Tenth SPE comparative solution project: a comparison of upscaling techniques"
+-- By Mike Christie (Heriot-Wat University) and Martin Blunt (Imperial College)
+-- SPE, August 2001
+-- ===============================================================================
+
+
+RUNSPEC
+
+TITLE
+    TENTH SPE COMPARATIVE SOLUTION PROJECT: A COMPARISON OF UPSCALING TECHNIQUES - MODEL 2
+
+DIMENS
+
+ 15  55  5  /
+
+NONNC
+
+
+OIL
+
+WATER
+
+GAS
+
+
+FIELD
+
+EQLDIMS
+  /
+
+TABDIMS
+  /
+
+WELLDIMS
+    2   5  1    2  /
+
+
+
+
+UNIFOUT
+UNIFIN
+
+START
+    13 'OCT' 1991  /
+
+NSTACK
+   300  /
+
+
+
+
+--      =================================================
+------- In theis section, the geometry of the simulation 
+------- grid and the rock perøeabilities, porosities are
+------- defined.
+--      =================================================
+
+GRID
+
+
+INIT
+
+OLDTRAN   
+ 
+DX
+  4125*80    /
+DY   
+  4125*40    / 
+DZ     
+  4125*2     /
+
+INCLUDE
+   SPE10MODEL2_TOPS_upscaled.INC  
+/
+-- In the PORO file, all the values equal to 0  have been replaced 
+-- by a minimum by a minimum value (1e-7) in order not to have 'dead cells'.
+
+INCLUDE 
+   'interim_poro.txt'
+/
+
+INCLUDE 
+   'interim_perm_.txt' 
+/
+
+MESSAGES
+   3* 100000  5* 100000 /
+
+
+-- =======================================================
+PROPS
+
+
+--Sw	  Krw     Kro
+SWOF
+
+0.200	0.0000	1.0000  0
+0.250	0.0069	0.8403  0
+0.300	0.0278	0.6944  0
+0.350	0.0625	0.5625  0
+0.400	0.1111	0.4444  0
+0.450	0.1736	0.3403  0
+0.500	0.2500	0.2500  0
+0.550	0.3403	0.1736  0
+0.600	0.4444	0.1111  0
+0.650	0.5625	0.0625  0
+0.700	0.6944	0.0278  0
+0.750	0.8403	0.0069  0
+0.800	1.0000	0.0000  0  /
+
+
+
+-- No gas, but table needed because Flo is a 3-phase simulator 
+-- Sgmax is setto 0.8 to have coherent data with SWOF
+-- simplest table has been considered
+
+-- Sg             Krg              Kro            Pcgo
+SGOF
+ 0.000000	0		1.000000	0.000000
+ 0.800000	1		0.000000	0.000000   /  
+
+
+-- Oil  Wat   Gas
+DENSITY
+   53   64   0.0624  /
+
+PVDO
+   300   1.05  2.85  
+   800   1.02  2.99
+   8000  1.01  3
+/
+
+PVTW
+   6000  1.01  0.000003  0.3   0  /
+
+--PVT oif gas for 3-phi simulator flow - MADE UP DATA
+PVDG
+   14.7   178.1   0.005
+   8000   1       0.01
+/
+
+ROCK
+   6000    0.000001 
+/
+
+
+SOLUTION ========================================================
+RESTART
+PAPER_INITIAL_10 49/
+
+EQUIL
+
+--    DATUM  DATUM   OWC    OWC    GOC    GOC    RSVD   RVVD   SOLN
+--    DEPTH  PRESS  DEPTH   PCOW  DEPTH   PCOG  TABLE  TABLE   METH
+
+      12000  6000   12170    0    12000    0     1*      1*      0   /
+
+
+SUMMARY ==========================================================
+
+RUNSUM
+
+FPR
+FOPR
+FOPT
+FWPT
+FWCT
+
+
+WOPR
+   'P1'
+/
+
+WWCT
+   'P1'
+/
+
+WOPT
+   'P1'
+/
+INCLUDE
+   'BOSAT.txt'
+/
+INCLUDE
+   'BPR.txt'
+/
+
+
+SCHEDULE =====================================================
+SKIPREST
+RPTRST
+    'BASIC=2'  /
+
+
+TUNING
+  /
+  /
+  2* 300 1* 12 /
+
+
+WELSPECS
+'P1'     'G1'     7      27     12001    'OIL'    /
+/
+
+COMPDAT
+'P1'     7    27   1   5   'OPEN'   2*   2  /
+/
+
+
+WCONPROD
+'P1'     'OPEN'    'BHP'   5*   4000 /
+/
+
+TSTEP
+1 2 3 4 5 5 10 10 20 20 30 30 30 30 50 50 33*100 /
+
+WELSPECS
+'INJ'    'G1'     DPM    D2    12001    'WATER'  /
+'P1'     'G1'     7      27     12001    'OIL'    /
+/
+
+COMPDAT
+'INJ'    DPM  D2   1   5   'OPEN'  2*   2  /
+'P1'     7    27   1   5   'OPEN'   2*   2  /
+/
+
+WCONINJE
+'INJ'   'WATER'   'OPEN'   'RESV'   1*   5000    10000 /
+/
+
+WCONPROD
+'P1'     'OPEN'    'BHP'   5*   4000 /
+/
+
+TSTEP
+37*100 /
+
+END
+
